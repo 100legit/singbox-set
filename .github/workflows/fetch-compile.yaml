@@ -73,6 +73,6 @@ jobs:
         git add .
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git commit -m "Released on ${{ env.BUILDTIME }}"
+        git commit -m "Released on $(date --rfc-3339=seconds)"
         git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
         git push -f -u origin sing
