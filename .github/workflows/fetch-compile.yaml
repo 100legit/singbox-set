@@ -72,5 +72,7 @@ jobs:
         git checkout -b sing
         git add .
         git commit -m "Released on ${{ env.BUILDTIME }}"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
         git remote add origin "https://${{ github.actor }}@github.com/${{ github.repository }}"
         git push -f -u origin sing
