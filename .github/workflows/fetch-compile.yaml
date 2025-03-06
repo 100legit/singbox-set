@@ -48,6 +48,8 @@ jobs:
         git clone -b sing --single-branch --depth 1 https://github.com/MetaCubeX/meta-rules-dat.git
         mkdir -p sing/metacubex/domainset
         mv meta-rules-dat/geo-lite/geosite/*.json sing/metacubex/domainset
+        mv meta-rules-dat/geo/geosite/cn.json sing/metacubex/domainset
+        mv meta-rules-dat/geo/geosite/geolocation-!cn.json sing/metacubex/domainset/notcn.json
         find sing/metacubex/domainset -type f -name "*.json" -exec sed -i 's/"version": 1/"version": 2/g' {} \;
 
         cp -r own sing/
