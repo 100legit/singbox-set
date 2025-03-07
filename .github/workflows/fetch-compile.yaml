@@ -69,6 +69,10 @@ jobs:
         find . -type f -name "*.srs" -exec rm -f {} \;
         find . -type f -name "*.json" -exec bash -c '
         echo "Compiling: $1"
+
+        jq 'del(.rules[0].process_name)' $1 > temp.json
+        mv temp.json $1
+
         if ! sing-box rule-set compile "$1"; then
           echo "Error compiling $1"
           exit 1
