@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "rules": [
+    {
+      "domain": [
+        "ping.archlinux.org",
+        "connectivitycheck.gstatic.com",
+        "www.msftconnecttest.com",
+        "networkcheck.kde.org",
+        "connectivitycheck.platform.hicloud.com",
+        "connect.rom.miui.com",
+        "dns.msftncsi.com",
+        "injections.adguard.org",
+        "local.adguard.org",
+        "stun.syncthing.net"
+      ],
+      "domain_suffix": [
+        "m2m",
+        "bogon",
+        "lan",
+        "localdomain",
+        "xboxlive.com",
+        "srv.nintendo.net",
+        "turn.twilio.com"
+      ],
+      "domain_keyword": [
+        "stun"
+      ]
+    }
+  ]
+}
