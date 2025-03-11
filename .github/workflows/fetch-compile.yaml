@@ -68,6 +68,47 @@ jobs:
         cd ..
 
         find . -type f -name "*.srs" -exec rm -f {} \;
+
+        find . -name "*.json" -print0 | while IFS= read -r -d $'\0' file; do
+          jq --arg remove_item "this_ruleset_is_made_by_sukkaw.ruleset.skk.moe" '
+            if (.rules[0].domain | type) == "array" then
+              .rules[0].domain |= map(select(. != $remove_item))
+            else
+              .
+            end
+            | if (.rules[0].domain_suffix | type) == "array" then
+                .rules[0].domain_suffix |= map(select(. != $remove_item))
+              else
+                .
+              end
+            | if (.rules[0].domain | length) == 0 then
+                .rules[0] |= del(.domain)
+              else
+                .
+              end
+            | if (.rules[0].domain_suffix | length) == 0 then
+                .rules[0] |= del(.domain_suffix)
+              else
+                .
+              end
+          ' "$file" > "$file.tmp"
+          if [[ $? -ne 0 ]]; then
+            echo "Error: jq processing failed for file '$file'."
+            rm -f "$file.tmp"
+            continue
+          fi
+          if [[ ! -s "$file.tmp" ]]; then
+            echo "Error:  jq produced an empty output for '$file'.  Original file preserved."
+            rm -f "$file.tmp"
+            continue
+          fi
+          mv "$file.tmp" "$file"
+          rules_count=$(jq '.rules | length' "$file")
+          if [[ "$rules_count" == "0" ]]; then
+            echo "Rules are empty, deleting file: $file"
+            rm -f "$file"
+        done
+
         find . -type f -name "*.json" -exec bash -c '
         echo "Compiling: $1"
 
