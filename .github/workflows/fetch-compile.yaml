@@ -103,7 +103,7 @@ jobs:
             continue
           fi
           mv "$file.tmp" "$file"
-          rules_count=$(jq 'if (.rules | length) = 1) then (.rules[0] | to_entries | length) else (.rules | length) end' "$file")
+          rules_count=$(jq 'if (.rules | length == 1) then (.rules[0] | to_entries | length) else (.rules | length) end' "$file")
           if [[ "$rules_count" == "0" ]]; then
             echo "Rules are empty, deleting file: $file"
             rm -f "$file"
