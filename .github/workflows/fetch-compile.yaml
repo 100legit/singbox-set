@@ -107,6 +107,7 @@ jobs:
           if [[ "$rules_count" == "0" ]]; then
             echo "Rules are empty, deleting file: $file"
             rm -f "$file"
+          fi
         done
 
         find . -type f -name "*.json" -exec bash -c '
