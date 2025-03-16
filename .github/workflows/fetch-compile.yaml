@@ -51,6 +51,8 @@ jobs:
         mv meta-rules-dat/geo/geosite/cn.json sing/metacubex/domainset
         mv meta-rules-dat/geo/geosite/gfw.json sing/metacubex/domainset
         mv meta-rules-dat/geo/geosite/geolocation-!cn.json sing/metacubex/domainset/notcn.json
+        mv meta-rules-dat/geo/geosite/cloudflare.json sing/metacubex/domainset/cloudflare.json
+        mv meta-rules-dat/geo/geosite/cloudflare-cn.json sing/metacubex/domainset/cloudflare-cn.json
         find sing/metacubex/domainset -type f -name "*.json" -exec sed -i 's/"version": 1/"version": 2/g' {} \;
 
         cp -r own sing/
