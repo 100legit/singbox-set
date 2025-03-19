@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "rules": [
+    {
+      "domain_regex": [
+        "^download[\\w.-]*?\\.mediafire\\.com$",
+        "^ftp\\.[\\w.-][\\w.-]\\.debian\\.org$",
+        "^[\\w.-]*?\\.s3\\.[\\w.-]*?\\.backblazeb2\\.com$"
+      ]
+    }
+  ]
+}
