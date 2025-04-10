@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "rules": [
+    {
+      "domain": [
+        "itvpnpmobile-a.akamaihd.net"
+      ],
+      "domain_suffix": [
+        "itv.com",
+        "tvlicensing.co.uk",
+        "bbci.co.uk",
+        "bbc.co.uk"
+      ],
+      "domain_keyword": [
+        "bbcfmt",
+        "uk-live"
+      ]
+    }
+  ]
+}

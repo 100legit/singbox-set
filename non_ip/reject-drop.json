@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "rules": [
+    {
+      "domain_suffix": [
+        "undefined",
+        "null",
+        "in.applicationinsights.azure.com",
+        "geo2.adobe.com"
+      ]
+    }
+  ]
+}
