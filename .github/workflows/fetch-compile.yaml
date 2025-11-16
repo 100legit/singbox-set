@@ -59,9 +59,13 @@ jobs:
 
         cd sing/domainset
 
-        echo "remove reject domain_keyword and ip_cidr"
-        jq 'del(.rules[0].domain_keyword, .rules[0].ip_cidr)' reject.json > temp.json
+        echo "remove reject domain_keyword"
+        jq 'del(.rules[0].domain_keyword)' reject.json > temp.json
         mv temp.json reject.json
+        echo "remove all ip_cidr in sukka/domainset"
+        for file in *.json; do 
+          jq 'del(.rules[0].ip_cidr)' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+        done
 
         echo "remove reject juejin"
         sed -i '/juejin/d' reject.json
