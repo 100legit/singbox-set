@@ -59,8 +59,8 @@ jobs:
 
         cd sing/domainset
 
-        echo "remove reject domain_keyword"
-        jq 'del(.rules[0].domain_keyword)' reject.json > temp.json
+        echo "remove reject domain_keyword and ip_cidr"
+        jq 'del(.rules[0].domain_keyword, .rules[0].ip_cidr)' reject.json > temp.json
         mv temp.json reject.json
 
         echo "remove reject juejin"
