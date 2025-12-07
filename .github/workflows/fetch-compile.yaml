@@ -78,7 +78,7 @@ jobs:
         cd ../..
 
         echo "for backward compatibility, cp sing/sukka/* to sing/"
-        cp sukka/* .
+        cp -r sukka/* .
 
         find . -type f -name "*.srs" -exec rm -f {} \;
 
