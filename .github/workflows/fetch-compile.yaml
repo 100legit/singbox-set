@@ -14,7 +14,8 @@ permissions:
   contents: write
 
 env:
-  SING_BOX_VERSION: 1.10.7
+  SING_BOX_VERSION: 1.12.12
+  MIHOMO_VERSION: 1.19.17
 
 jobs:
   sync_and_compile:
@@ -143,3 +144,37 @@ jobs:
         git commit -m "Released on $(date --rfc-3339=seconds)"
         git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
         git push -f -u origin sing
+
+    - name: Install mihomo
+      run: |
+        curl -Lo mihomo.gz https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/mihomo-linux-amd64-v3-v${MIHOMO_VERSION}.gz
+        gunzip mihomo.gz
+        chmod +x mihomo-linux-amd64-v3
+        sudo mv mihomo-linux-amd64-v3 /usr/local/bin/mihomo
+        mihomo version
+
+    - name: Fetch and Compile mihomo Rules from ruleset
+      run: |
+        git clone --depth 1 https://github.com/SukkaLab/ruleset.skk.moe.git
+        mkdir -p mihomo/sukka
+        mv ruleset.skk.moe/Clash/* mihomo/sukka
+        rm -rf ruleset.skk.moe
+
+        cd mihomo/sukka/domainset
+
+        echo "remove reject juejin"
+        sed -i '/juejin/d' reject.txt
+
+        echo "cd into mihomo"
+        cd ../..
+        find domainset non_ip -type f -name "*.txt" -exec sed -i '/7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' {} \;
+        (cd domainset && find . -type f -name "*.txt" -exec mihomo convert-ruleset domain text {} {}.mrs \;) && (cd ip && find . -type f -name "*.txt" -exec mihomo convert-ruleset ipcidr text {} {}.mrs \;)
+
+        git init
+        git checkout -b mihomo
+        git add .
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git commit -m "Released on $(date --rfc-3339=seconds)"
+        git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+        git push -f -u origin mihomo
