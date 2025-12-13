@@ -161,12 +161,14 @@ jobs:
         rm -rf ruleset.skk.moe
 
         cd mihomo/sukka/domainset
-
         echo "remove reject juejin"
         sed -i '/juejin/d' reject.txt
-
         find . -type f -name "*.txt" -exec sed -i '/7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' {} \;
-        find . -type f -name "*.txt" -exec mihomo convert-ruleset domain text {} {}.mrs \;
+        find . -type f -name "*.txt" -exec sh -c '
+          if ! mihomo convert-ruleset domain text "$1" "$1.mrs"; then
+            echo "Error processing file: $1"
+          fi
+        ' sh {} \;
 
         echo "cd into mihomo/sukka/ip"
         cd ../ip
@@ -180,7 +182,11 @@ jobs:
                 fi
             fi
         done
-        find . -type f -name "*.txt" -exec mihomo convert-ruleset ipcidr text {} {}.mrs \;
+        find . -type f -name "*.txt" -exec sh -c '
+          if ! mihomo convert-ruleset ipcidr text "$1" "$1.mrs"; then
+            echo "Error processing file: $1"
+          fi
+        ' sh {} \;
 
         echo "cd into mihomo/sukka/non_ip"
         cd ../non_ip
