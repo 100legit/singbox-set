@@ -165,10 +165,29 @@ jobs:
         echo "remove reject juejin"
         sed -i '/juejin/d' reject.txt
 
+        find . -type f -name "*.txt" -exec sed -i '/7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' {} \;
+        find . -type f -name "*.txt" -exec mihomo convert-ruleset domain text {} {}.mrs \;
+
+        echo "cd into mihomo/sukka/ip"
+        cd ../ip
+        for file in *.txt; do
+            if [ -f "$file" ]; then
+                grep "^IP-CIDR" "$file" | awk -F, '{print $2}' > temp.txt
+                if [ -s temp.txt ]; then
+                    mv temp.txt "$file"
+                else
+                    rm "$file"
+                fi
+            fi
+        done
+        find . -type f -name "*.txt" -exec mihomo convert-ruleset ipcidr text {} {}.mrs \;
+
+        echo "cd into mihomo/sukka/non_ip"
+        cd ../non_ip
+        find . -type f -name "*.txt" -exec sed -i '/7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' {} \;
+
         echo "cd into mihomo"
         cd ../..
-        find domainset non_ip -type f -name "*.txt" -exec sed -i '/7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' {} \;
-        (cd domainset && find . -type f -name "*.txt" -exec mihomo convert-ruleset domain text {} {}.mrs \;) && (cd ip && find . -type f -name "*.txt" -exec mihomo convert-ruleset ipcidr text {} {}.mrs \;)
 
         git init
         git checkout -b mihomo
