@@ -151,7 +151,7 @@ jobs:
         gunzip mihomo.gz
         chmod +x mihomo
         sudo mv mihomo /usr/local/bin/mihomo
-        mihomo version
+        mihomo -v
 
     - name: Fetch and Compile mihomo Rules from ruleset
       run: |
