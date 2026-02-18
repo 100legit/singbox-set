@@ -91,7 +91,7 @@ jobs:
               'geo-lite/geosite/*.json': 'metacubex/domainset',
               'geo/geosite/cn.json': 'metacubex/domainset',
               'geo/geosite/gfw.json': 'metacubex/domainset',
-              'geo/geosite/geolocation-!cn.json': 'metacubex/domainset/notcn/notcn.json',
+              'geo/geosite/geolocation-!cn.json': 'metacubex/domainset/notcn.json',
               'geo/geosite/cloudflare.json': 'metacubex/domainset/cloudflare.json',
               'geo/geosite/cloudflare-cn.json': 'metacubex/domainset/cloudflare-cn.json',
               'geo/geosite/googlefcm.json': 'metacubex/domainset/googlefcm.json',
