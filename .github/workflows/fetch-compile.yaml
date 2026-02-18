@@ -75,6 +75,12 @@ jobs:
         echo "remove reject juejin"
         sed -i '/juejin/d' reject.json
 
+        echo "remove all ip_cidr in sukka/non_ip"
+        cd ../non_ip
+        for file in *.json; do
+          jq 'del(.rules[0].ip_cidr)' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+        done
+
         echo "cd into sing"
         cd ../..
 
