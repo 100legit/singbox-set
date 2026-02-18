@@ -1,4 +1,4 @@
-name: Fetch and Compile Sing-Box Rules
+name: Fetch and Compile Sing-Box Rules (Python Edition)
 
 on:
   workflow_dispatch:
@@ -22,187 +22,301 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout the repository
-      uses: actions/checkout@v3
+      - name: Checkout the repository
+        uses: actions/checkout@v3
 
-    - name: Set up Git user
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Set up Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-    - name: Install sing-box
-      run: |
-        curl -Lo sing-box.tar.gz https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz
-        tar -xzf sing-box.tar.gz
-        chmod +x sing-box-${SING_BOX_VERSION}-linux-amd64/sing-box
-        sudo mv sing-box-${SING_BOX_VERSION}-linux-amd64/sing-box /usr/local/bin/sing-box
-        sing-box version
-        rm -rf sing-box sing-box-${SING_BOX_VERSION}-linux-amd64 sing-box.tar.gz
+      - name: Install Tools (Sing-box & Mihomo)
+        run: |
+          # Install Sing-box
+          curl -Lo sing-box.tar.gz https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz
+          tar -xzf sing-box.tar.gz
+          sudo mv sing-box-${SING_BOX_VERSION}-linux-amd64/sing-box /usr/local/bin/sing-box
+          rm -rf sing-box*
+          
+          # Install Mihomo
+          curl -Lo mihomo.gz https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/mihomo-linux-amd64-v3-v${MIHOMO_VERSION}.gz
+          gunzip mihomo.gz
+          chmod +x mihomo
+          sudo mv mihomo /usr/local/bin/mihomo
 
-    - name: Fetch and Compile Sing-Box Rules from ruleset
-      run: |
-        git clone --depth 1 https://github.com/SukkaLab/ruleset.skk.moe.git
-        mkdir -p sing/sukka
-        mv ruleset.skk.moe/sing-box/* sing/sukka
-        rm -rf ruleset.skk.moe
+      - name: Clone Rule Sources
+        run: |
+          git clone --depth 1 https://github.com/SukkaLab/ruleset.skk.moe.git ruleset_src
+          git clone -b sing --single-branch --depth 1 https://github.com/MetaCubeX/meta-rules-dat.git meta_src
 
-        git clone -b sing --single-branch --depth 1 https://github.com/MetaCubeX/meta-rules-dat.git
-        mkdir -p sing/metacubex/domainset
-        mv meta-rules-dat/geo-lite/geosite/*.json sing/metacubex/domainset
-        mv meta-rules-dat/geo/geosite/cn.json sing/metacubex/domainset
-        mv meta-rules-dat/geo/geosite/gfw.json sing/metacubex/domainset
-        mv meta-rules-dat/geo/geosite/geolocation-!cn.json sing/metacubex/domainset/notcn.json
-        mv meta-rules-dat/geo/geosite/cloudflare.json sing/metacubex/domainset/cloudflare.json
-        mv meta-rules-dat/geo/geosite/cloudflare-cn.json sing/metacubex/domainset/cloudflare-cn.json
-        mv meta-rules-dat/geo/geosite/googlefcm.json sing/metacubex/domainset/googlefcm.json
-        mv meta-rules-dat/geo/geosite/google.json sing/metacubex/domainset/google.json
-        mv meta-rules-dat/geo/geosite/google-cn.json sing/metacubex/domainset/google-cn.json
-        mv meta-rules-dat/geo/geosite/google@cn.json sing/metacubex/domainset/google@cn.json
-        find sing/metacubex/domainset -type f -name "*.json" -exec sed -i 's/"version": 1/"version": 2/g' {} \;
+      # ----------------------------------------------------------------
+      # 处理 Sing-box 规则 (Updated)
+      # ----------------------------------------------------------------
+      - name: Process Sing-Box Rules
+        shell: python
+        run: |
+          import json
+          import os
+          import shutil
+          import subprocess
+          from pathlib import Path
 
-        cp -r own sing/
+          # --- 配置 ---
+          BASE_DIR = Path('.')
+          SUKKA_SRC = BASE_DIR / 'ruleset_src/sing-box'
+          META_SRC = BASE_DIR / 'meta_src'
+          WORK_DIR = BASE_DIR / 'sing'
 
-        cd sing/sukka/domainset
+          # 定义要移除的垃圾字符串/水印
+          JUNK_STRINGS = {
+              "7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe",
+              "this_ruleset_is_made_by_sukkaw.ruleset.skk.moe"
+          }
 
-        echo "remove reject domain_keyword"
-        jq 'del(.rules[0].domain_keyword)' reject.json > temp.json
-        mv temp.json reject.json
-        echo "remove all ip_cidr in sukka/domainset"
-        for file in *.json; do 
-          jq 'del(.rules[0].ip_cidr)' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
-        done
+          # 重建目录
+          if WORK_DIR.exists(): shutil.rmtree(WORK_DIR)
+          WORK_DIR.mkdir(parents=True)
+          (WORK_DIR / 'sukka').mkdir()
+          (WORK_DIR / 'metacubex/domainset').mkdir(parents=True)
+          (WORK_DIR / 'metacubex/domainset/notcn').mkdir()
+          
+          print(">>> Moving Files...")
+          
+          # 1. 移动 Sukka 文件
+          for item in SUKKA_SRC.glob('*'):
+              shutil.move(str(item), str(WORK_DIR / 'sukka' / item.name))
 
-        echo "remove reject juejin"
-        sed -i '/juejin/d' reject.json
+          # 2. 移动 MetaCubeX 文件
+          meta_mapping = {
+              'geo-lite/geosite/*.json': 'metacubex/domainset',
+              'geo/geosite/cn.json': 'metacubex/domainset',
+              'geo/geosite/gfw.json': 'metacubex/domainset',
+              'geo/geosite/geolocation-!cn.json': 'metacubex/domainset/notcn/notcn.json',
+              'geo/geosite/cloudflare.json': 'metacubex/domainset/cloudflare.json',
+              'geo/geosite/cloudflare-cn.json': 'metacubex/domainset/cloudflare-cn.json',
+              'geo/geosite/googlefcm.json': 'metacubex/domainset/googlefcm.json',
+              'geo/geosite/google.json': 'metacubex/domainset/google.json',
+              'geo/geosite/google-cn.json': 'metacubex/domainset/google-cn.json',
+              'geo/geosite/google@cn.json': 'metacubex/domainset/google@cn.json',
+          }
 
-        echo "remove all ip_cidr in sukka/non_ip"
-        cd ../non_ip
-        for file in *.json; do
-          jq 'del(.rules[0].ip_cidr)' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
-        done
+          for src_pattern, dest_rel in meta_mapping.items():
+              if '*' in src_pattern:
+                  parent = (META_SRC / src_pattern).parent
+                  pattern = Path(src_pattern).name
+                  for f in parent.glob(pattern):
+                      shutil.move(str(f), str(WORK_DIR / dest_rel / f.name))
+              else:
+                  src_file = META_SRC / src_pattern
+                  if src_file.exists():
+                      dest_path = WORK_DIR / dest_rel
+                      if dest_path.suffix == '.json': 
+                          shutil.move(str(src_file), str(dest_path))
+                      else:
+                          shutil.move(str(src_file), str(dest_path / src_file.name))
 
-        echo "cd into sing"
-        cd ../..
+          if (BASE_DIR / 'own').exists():
+              shutil.copytree(str(BASE_DIR / 'own'), str(WORK_DIR / 'own'), dirs_exist_ok=True)
 
-        find . -type f -name "*.srs" -exec rm -f {} \;
+          print(">>> Processing JSON files...")
 
-        find . -name "*.json" -print0 | while IFS= read -r -d $'\0' file; do
-          jq --arg remove_item "7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe" '
-            if (.rules[0].domain | type) == "array" then
-              .rules[0].domain |= map(select(. != $remove_item))
-            else
-              .
-            end
-            | if (.rules[0].domain_suffix | type) == "array" then
-                .rules[0].domain_suffix |= map(select(. != $remove_item))
-              else
-                .
-              end
-            | if (.rules[0].domain | length) == 0 then
-                .rules[0] |= del(.domain)
-              else
-                .
-              end
-            | if (.rules[0].domain_suffix | length) == 0 then
-                .rules[0] |= del(.domain_suffix)
-              else
-                .
-              end
-          ' "$file" > "$file.tmp"
-          if [[ $? -ne 0 ]]; then
-            echo "Error: jq processing failed for file '$file'."
-            rm -f "$file.tmp"
-            continue
-          fi
-          if [[ ! -s "$file.tmp" ]]; then
-            echo "Error:  jq produced an empty output for '$file'.  Original file preserved."
-            rm -f "$file.tmp"
-            continue
-          fi
-          mv "$file.tmp" "$file"
-          rules_count=$(jq 'if (.rules | length == 1) then (.rules[0] | to_entries | length) else (.rules | length) end' "$file")
-          if [[ "$rules_count" == "0" ]]; then
-            echo "Rules are empty, deleting file: $file"
-            rm -f "$file"
-          fi
-        done
+          # 3. 遍历并清洗 JSON
+          for json_file in WORK_DIR.rglob('*.json'):
+              try:
+                  with open(json_file, 'r', encoding='utf-8') as f:
+                      data = json.load(f)
+              except json.JSONDecodeError:
+                  continue
 
-        find . -type f -name "*.json" -exec bash -c '
-        echo "Compiling: $1"
+              is_modified = False
 
-        jq "del(.rules[0].process_name)" $1 > temp.json
-        mv temp.json $1
+              # [MetaCubeX] Version Upgrade
+              if 'metacubex' in str(json_file) and data.get('version') == 1:
+                  data['version'] = 2
+                  is_modified = True
 
-        if ! sing-box rule-set compile "$1"; then
-          echo "Error compiling $1"
-          exit 1
-        fi
-        ' _ {} \;
+              if 'rules' in data:
+                  cleaned_rules = []
+                  for rule in data['rules']:
+                      # 0. 移除 process_name
+                      if 'process_name' in rule:
+                          del rule['process_name']
+                          is_modified = True
 
-        git init
-        git checkout -b sing
-        git add .
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git commit -m "Released on $(date --rfc-3339=seconds)"
-        git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
-        git push -f -u origin sing
+                      # [Sukka] reject.json 移除 domain_keyword
+                      if json_file.name == 'reject.json' and 'domain_keyword' in rule:
+                          del rule['domain_keyword']
+                          is_modified = True
 
-    - name: Install mihomo
-      run: |
-        curl -Lo mihomo.gz https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/mihomo-linux-amd64-v3-v${MIHOMO_VERSION}.gz
-        gunzip mihomo.gz
-        chmod +x mihomo
-        sudo mv mihomo /usr/local/bin/mihomo
-        mihomo -v
+                      # 1. 深度清洗：移除 JUNK 字符串 & 移除空 Key
+                      # 我们使用 list(rule.keys()) 来创建一个键的副本，以便在循环中安全删除
+                      keys_to_remove = []
+                      
+                      for key in list(rule.keys()):
+                          val = rule[key]
+                          
+                          # 只有列表类型才需要过滤字符串
+                          if isinstance(val, list):
+                              # A. 过滤垃圾字符串 / juejin
+                              # 如果是字符串列表，检查是否在 JUNK_STRINGS 中
+                              original_len = len(val)
+                              val = [x for x in val if str(x) not in JUNK_STRINGS]
+                              
+                              # 特殊逻辑：reject.json 移除 juejin
+                              if json_file.name == 'reject.json' and key in ['domain', 'domain_suffix']:
+                                  val = [x for x in val if 'juejin' not in str(x)]
 
-    - name: Fetch and Compile mihomo Rules from ruleset
-      run: |
-        git clone --depth 1 https://github.com/SukkaLab/ruleset.skk.moe.git
-        mkdir -p mihomo/sukka
-        mv ruleset.skk.moe/Clash/* mihomo/sukka
-        rm -rf ruleset.skk.moe
+                              # B. [Sukka] domainset/non_ip 移除 ip_cidr
+                              if key == 'ip_cidr' and 'sukka' in str(json_file) and ('domainset' in str(json_file) or 'non_ip' in str(json_file)):
+                                  val = [] # 强制清空，稍后会被下面的逻辑删除
 
-        cd mihomo/sukka/domainset
-        echo "remove reject juejin"
-        sed -i '/juejin/d' reject.txt
-        find . -type f -name "*.txt" -exec sed -i '/7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' {} \;
-        find . -type f -name "*.txt" -exec sh -c '
-          if ! mihomo convert-ruleset domain text "$1" "$1.mrs"; then
-            echo "Error processing file: $1"
-          fi
-        ' sh {} \;
+                              # 更新列表（如果发生了变化）
+                              if len(val) != original_len:
+                                  rule[key] = val
+                                  is_modified = True
+                              
+                              # C. 如果列表变为空，标记删除该 Key
+                              if len(val) == 0:
+                                  keys_to_remove.append(key)
 
-        echo "cd into mihomo/sukka/ip"
-        cd ../ip
-        for file in *.txt; do
-            if [ -f "$file" ]; then
-                grep "^IP-CIDR" "$file" | awk -F, '{print $2}' > temp.txt
-                if [ -s temp.txt ]; then
-                    mv temp.txt "$file"
-                else
-                    rm "$file"
-                fi
-            fi
-        done
-        find . -type f -name "*.txt" -exec sh -c '
-          if ! mihomo convert-ruleset ipcidr text "$1" "$1.mrs"; then
-            echo "Error processing file: $1"
-          fi
-        ' sh {} \;
+                      # 执行删除空 Key 的操作
+                      for k in keys_to_remove:
+                          del rule[k]
+                          is_modified = True
 
-        echo "cd into mihomo/sukka/non_ip"
-        cd ../non_ip
-        find . -type f -name "*.txt" -exec sed -i '/7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe/d' {} \;
+                      # 2. 检查规则是否还有效
+                      # 至少应该包含一种匹配条件 (domain, ip_cidr, etc) 
+                      # 如果 rule 只剩下 process_path 或 source_port 等，或者彻底为空，视情况保留或丢弃
+                      # 这里简单判定：如果 rule 变成了空字典，或者只剩个别无用字段，就丢弃
+                      if rule: 
+                          cleaned_rules.append(rule)
+                  
+                  if len(data['rules']) != len(cleaned_rules):
+                      data['rules'] = cleaned_rules
+                      is_modified = True
 
-        echo "cd into mihomo"
-        cd ../..
+              # 保存更改
+              if is_modified:
+                  with open(json_file, 'w', encoding='utf-8') as f:
+                      json.dump(data, f, indent=2, ensure_ascii=False)
+              
+              # 删除空文件
+              if not data.get('rules') or len(data['rules']) == 0:
+                  print(f"Deleting empty file: {json_file}")
+                  json_file.unlink()
 
-        git init
-        git checkout -b mihomo
-        git add .
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git commit -m "Released on $(date --rfc-3339=seconds)"
-        git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
-        git push -f -u origin mihomo
+          print(">>> Compiling Rules...")
+          
+          # 4. 编译
+          for srs in WORK_DIR.rglob('*.srs'): srs.unlink()
+
+          for json_file in WORK_DIR.rglob('*.json'):
+              print(f"Compiling {json_file.name}...")
+              result = subprocess.run(
+                  ["sing-box", "rule-set", "compile", str(json_file)],
+                  capture_output=True, text=True
+              )
+              if result.returncode != 0:
+                  print(f"Error compiling {json_file}: {result.stderr}")
+                  exit(1)
+
+      - name: Push Sing-Box Rules
+        run: |
+          cd sing
+          git init
+          git checkout -b sing
+          git add .
+          git commit -m "Released on $(date --rfc-3339=seconds)"
+          git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git push -f -u origin sing
+
+      # ----------------------------------------------------------------
+      # 处理 Mihomo 规则 (Updated)
+      # ----------------------------------------------------------------
+      - name: Process Mihomo Rules
+        shell: python
+        run: |
+          import os
+          import shutil
+          import subprocess
+          from pathlib import Path
+
+          BASE_DIR = Path('.')
+          SUKKA_SRC = BASE_DIR / 'ruleset_src/Clash'
+          WORK_DIR = BASE_DIR / 'mihomo'
+          
+          # 定义垃圾字符串
+          JUNK_STRINGS = {
+              "7h1s_rul35et_i5_mad3_by_5ukk4w-ruleset.skk.moe",
+              "this_ruleset_is_made_by_sukkaw.ruleset.skk.moe"
+          }
+
+          if WORK_DIR.exists(): shutil.rmtree(WORK_DIR)
+          WORK_DIR.mkdir(parents=True)
+          (WORK_DIR / 'sukka').mkdir()
+
+          print(">>> Moving Mihomo Files...")
+          for item in SUKKA_SRC.glob('*'):
+              target = WORK_DIR / 'sukka' / item.name
+              if item.is_dir():
+                  shutil.copytree(item, target, dirs_exist_ok=True)
+              else:
+                  shutil.copy2(item, target)
+
+          print(">>> Cleaning Text Rules...")
+          
+          for txt_file in WORK_DIR.rglob('*.txt'):
+              with open(txt_file, 'r', encoding='utf-8') as f:
+                  lines = f.readlines()
+              
+              new_lines = []
+              is_ip_folder = 'sukka/ip' in str(txt_file).replace('\\', '/')
+              
+              for line in lines:
+                  content = line.strip()
+                  
+                  # 过滤垃圾字符串
+                  found_junk = False
+                  for junk in JUNK_STRINGS:
+                      if junk in content:
+                          found_junk = True
+                          break
+                  if found_junk: continue
+                  
+                  if 'juejin' in content and txt_file.name == 'reject.txt': continue
+                  
+                  if is_ip_folder:
+                      if content.startswith('IP-CIDR'):
+                          parts = content.split(',')
+                          if len(parts) >= 2:
+                              new_lines.append(parts[1] + '\n')
+                  else:
+                      new_lines.append(line)
+
+              if not new_lines:
+                  print(f"Deleting empty file: {txt_file}")
+                  txt_file.unlink()
+                  continue
+
+              with open(txt_file, 'w', encoding='utf-8') as f:
+                  f.writelines(new_lines)
+
+              rule_type = 'ipcidr' if is_ip_folder else 'domain'
+              mrs_path = txt_file.with_suffix('.mrs')
+              
+              print(f"Compiling {txt_file.name} as {rule_type}...")
+              result = subprocess.run(
+                  ["mihomo", "convert-ruleset", rule_type, "text", str(txt_file), str(mrs_path)],
+                  capture_output=True, text=True
+              )
+              # Error handling tailored for non-critical failures if needed
+
+      - name: Push Mihomo Rules
+        run: |
+          cd mihomo
+          git init
+          git checkout -b mihomo
+          git add .
+          git commit -m "Released on $(date --rfc-3339=seconds)"
+          git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git push -f -u origin mihomo
