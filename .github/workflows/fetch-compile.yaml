@@ -223,6 +223,8 @@ jobs:
       - name: Push Sing-Box Rules
         run: |
           cd sing
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git init
           git checkout -b sing
           git add .
