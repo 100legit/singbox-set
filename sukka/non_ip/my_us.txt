@@ -1,0 +1,7 @@
+domain:crunchyroll.com
+domain:mandaom.com
+full:cableav.tv
+full:copymanga.site
+full:jav.guru
+full:javdb.com
+full:www.coinbase.com

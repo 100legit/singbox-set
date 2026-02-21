@@ -1,0 +1,12 @@
+domain:cdn.hinet.net
+full:av.jkforum.net
+full:avbebe.com
+full:hanime1.me
+full:mhgui.com
+full:www.manhuagui.com
+full:www.yymanhua.com
+full:yymanhua.com
+regexp:^[\w.-]*?\.ffzy-online[\w.-]\.com$
+regexp:^[\w.-]*?\.ffzy-play[\w.-]\.com$
+regexp:^[\w.-]*?\.lz-cdn[\w.-][\w.-]\.com$
+regexp:^[\w.-]*?\.lz-cdn[\w.-]\.com$

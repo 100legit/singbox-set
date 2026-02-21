@@ -1,0 +1,7 @@
+regexp:^[\w.-]*?\.s3\.[\w.-]*?\.backblazeb2\.com$
+regexp:^cdn-[\w.-]*?\.comaps\.app$
+regexp:^cdn-[\w.-]*?\.comaps\.tech$
+regexp:^cdn-[\w.-]*?\.organicmaps\.app$
+regexp:^download[\w.-]*?\.mediafire\.com$
+regexp:^ftp\.[\w.-][\w.-]\.debian\.org$
+regexp:^ftp\.[\w.-][\w.-]\.freebsd\.org$

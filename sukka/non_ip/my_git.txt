@@ -1,0 +1,6 @@
+domain:githubcopilot.com
+domain:huggingface.co
+full:alive.github.com
+full:api.github.com
+full:github.com
+full:github.dev
