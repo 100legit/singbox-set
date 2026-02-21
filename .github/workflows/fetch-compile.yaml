@@ -50,7 +50,7 @@ jobs:
           git clone -b sing --single-branch --depth 1 https://github.com/MetaCubeX/meta-rules-dat.git meta_src
 
       # ----------------------------------------------------------------
-      # 处理 Sing-box 规则 (Updated)
+      # 处理 Sing-box 规则
       # ----------------------------------------------------------------
       - name: Process Sing-Box Rules
         shell: python
@@ -233,7 +233,79 @@ jobs:
           git push -f -u origin sing
 
       # ----------------------------------------------------------------
-      # 处理 Mihomo 规则 (Updated)
+      # 处理 MosDNS 规则 (New)
+      # ----------------------------------------------------------------
+      - name: Process MosDNS Rules
+        shell: python
+        run: |
+          import json
+          import os
+          import shutil
+          from pathlib import Path
+
+          SING_DIR = Path('sing')
+          MOSDNS_DIR = Path('mosdns')
+
+          if MOSDNS_DIR.exists(): shutil.rmtree(MOSDNS_DIR)
+          MOSDNS_DIR.mkdir(parents=True)
+
+          # 映射 sing-box 的 key 到 mosdns 的前缀
+          KEY_MAP = {
+              'domain_suffix': 'domain:',
+              'domain': 'full:',
+              'domain_keyword': 'keyword:',
+              'domain_regex': 'regexp:'
+          }
+
+          print(">>> Generating MosDNS Rules...")
+          # 直接读取已经清洗好的 sing-box json
+          for json_file in SING_DIR.rglob('*.json'):
+              try:
+                  with open(json_file, 'r', encoding='utf-8') as f:
+                      data = json.load(f)
+              except json.JSONDecodeError:
+                  continue
+
+              lines = []
+              if 'rules' in data:
+                  for rule in data['rules']:
+                      for sb_key, mosdns_prefix in KEY_MAP.items():
+                          if sb_key in rule:
+                              items = rule[sb_key]
+                              if isinstance(items, list):
+                                  for item in items:
+                                      lines.append(f"{mosdns_prefix}{item}\n")
+                              elif isinstance(items, str):
+                                  lines.append(f"{mosdns_prefix}{items}\n")
+
+              # 如果提取到了域名规则，就生成对应的 txt 文件
+              if lines:
+                  # 保持原有的目录结构
+                  rel_path = json_file.relative_to(SING_DIR)
+                  txt_file = MOSDNS_DIR / rel_path.with_suffix('.txt')
+                  txt_file.parent.mkdir(parents=True, exist_ok=True)
+                  
+                  # 去重并排序，保持文件整洁
+                  unique_lines = sorted(list(set(lines)))
+                  
+                  with open(txt_file, 'w', encoding='utf-8') as f:
+                      f.writelines(unique_lines)
+                  print(f"Generated {txt_file}")
+
+      - name: Push MosDNS Rules
+        run: |
+          cd mosdns
+          git init
+          git checkout -b mosdns
+          git add .
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Released on $(date --rfc-3339=seconds)"
+          git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git push -f -u origin mosdns
+
+      # ----------------------------------------------------------------
+      # 处理 Mihomo 规则
       # ----------------------------------------------------------------
       - name: Process Mihomo Rules
         shell: python
