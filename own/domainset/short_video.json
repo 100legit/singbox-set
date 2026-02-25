@@ -2,7 +2,7 @@
   "version": 2,
   "rules": [
     {
-      "domain": [
+      "domain_suffix": [
         "douyin.com",
         "log.snssdk.com",
         "xlog.snssdk.com",
@@ -87,3 +87,4 @@
     }
   ]
 }
+
