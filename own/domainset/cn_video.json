@@ -10,6 +10,7 @@
         "pptv"
       ],
       "domain_suffix": [
+        "v.qq.com",
         "iqiyi.com",
         "mgtv.com",
         "ixigua.com",
@@ -20,3 +21,4 @@
     }
   ]
 }
+
