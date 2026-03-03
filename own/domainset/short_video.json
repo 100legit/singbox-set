@@ -4,6 +4,7 @@
     {
       "domain_suffix": [
         "douyin.com",
+        "douyinvod.com",
         "log.snssdk.com",
         "xlog.snssdk.com",
         "i.snssdk.com",
@@ -87,4 +88,5 @@
     }
   ]
 }
+
 
