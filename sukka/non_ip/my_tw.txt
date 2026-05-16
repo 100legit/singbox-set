@@ -1,0 +1,9 @@
+domain:cdn.hinet.net
+full:av.jkforum.net
+full:avbebe.com
+full:hanime1.me
+full:javdb.com
+full:mhgui.com
+full:www.manhuagui.com
+full:www.yymanhua.com
+full:yymanhua.com
