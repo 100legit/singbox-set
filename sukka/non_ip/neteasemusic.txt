@@ -1,0 +1,13 @@
+#########################################
+# Sukka's Ruleset - Netease Music
+# Last Updated: 2026-03-10T14:56:40.489Z
+# Size: 3
+# License: AGPL 3.0
+# Homepage: https://ruleset.skk.moe
+# GitHub: https://github.com/SukkaW/Surge
+#
+# This file contains rules for Netease Music.
+#########################################
+DOMAIN-SUFFIX,music.126.net
+DOMAIN-SUFFIX,music.163.com
+################## EOF ##################
