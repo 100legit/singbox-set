@@ -1,0 +1,16 @@
+domain:7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+domain:cdn-telegram.org
+domain:graph.org
+domain:legra.ph
+domain:t.me
+domain:tdesktop.com
+domain:telega.one
+domain:telegra.ph
+domain:telegram.dog
+domain:telegram.me
+domain:telegram.org
+domain:telegram.space
+domain:telesco.pe
+domain:tg.dev
+domain:tx.me
+full:7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe

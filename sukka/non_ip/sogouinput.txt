@@ -1,0 +1,11 @@
+domain:7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+domain:account.sogou.com
+domain:beacon.qq.com
+domain:get.sogou.com
+domain:ime.sogou.com
+domain:macime.sogou.com
+domain:pinyin.sogou.com
+domain:sginput.qq.com
+domain:shouji.sogou.com
+full:7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+full:oth.str.mdt.qq.com
