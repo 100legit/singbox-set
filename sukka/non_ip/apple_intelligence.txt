@@ -1,0 +1,7 @@
+domain:7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+full:7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+full:apple-relay.apple.com
+full:apple-relay.cloudflare.com
+full:apple-relay.fastly-edge.com
+full:cp4.cloudflare.com
+full:gspe1-ssl.ls.apple.com
