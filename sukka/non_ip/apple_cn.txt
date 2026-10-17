@@ -1,0 +1,11 @@
+domain:7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+domain:apple.com.cn
+domain:cn-ssl.ls.apple.com
+domain:cn.apple.com
+domain:cn.ls.apple.com
+domain:gspe19-cn-ssl.ls.apple.com
+domain:icloud.com.cn
+full:7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+full:api.smoot.apple.cn
+full:appleintelligencefeedback.care.apple.com
+full:gs-loc-cn.apple.com
