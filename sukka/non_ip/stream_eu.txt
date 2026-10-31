@@ -1,0 +1,10 @@
+domain:7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+domain:bbc.co.uk
+domain:bbci.co.uk
+domain:itv.com
+domain:tvlicensing.co.uk
+full:7h15.ru1353t.1s.m4d3.by.5ukk4w.skk.moe
+full:bbc.mp-pxcdn.com
+full:itvpnpmobile-a.akamaihd.net
+keyword:bbcfmt
+keyword:uk-live
